@@ -1,0 +1,73 @@
+def plot_heatmaps(datasets, filename, xlabels=None, ylabels=None, titles=None, paper_size=(8.3,11.7)):
+    """Plots heatmaps. Produces one pdf file with maximum 8 technologies.
+
+    Args:
+        datasets (list): List with the datasets that will be plotted, in the format for the seaborn heatmap function. The order of categories should be previously defined.
+        filename (str): Name of the file.
+        titles (list): List of titles for each plot. Default: None.
+        paper_size (tuple): Size of the paper. (width_float, height_float) in inches. Default (A4): (8.3, 11.7)
+        
+    Returns:
+    """     
+    n = len(datasets)
+    proceed = False
+    if n > 6:
+        print('Too many datasets. Maximum 6.')
+    elif xlabels != None or ylabels != None or titles != None:
+        texts = []
+        if xlabels != None:
+            texts.append(xlabels)
+        if ylabels != None:
+            texts.append(ylabels)
+        if titles != None:
+            texts.append(titles)
+        problem = False
+        for t in texts:
+            if len(t) != n:
+                print('Error: The number of datasets and bundles of labels/titles do not coincide.')
+                problem = True
+        if problem == False:
+            proceed = True
+    else:
+        proceed = True
+
+    if proceed == True:
+        if n > 3:
+            cols = 2
+        else:
+            cols = 1
+
+        if n == 1:
+            rows = 1
+        elif (n == 2) or (n == 4):
+            rows = 2
+        else:
+            rows = 3
+
+        fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=paper_size)       
+        if n == 1:
+            for dataset in datasets:
+                if dataset.iloc[:,0].sum() == 1 or dataset.iloc[0,:].sum() == 1:
+                    sns.heatmap(dataset, annot=np.array(type_vs_loc_group, dtype=int), fmt='d', ax=ax)
+                #ax.set_title('')
+                #ax.set_ylabel(y_labels[0])
+        elif n == 2:
+            for counter, dataset in enumerate(datasets):
+                sns.heatmap(dataset, ax=ax[counter], annot=annot, vmin=0)        
+                #ax[counter].set_title('')
+        else:
+            counter = 0
+            i = 0
+            while i < rows:
+                j = 0
+                while j < cols and counter < n:
+                    dataset = datasets[counter]
+                    sns.heatmap(dataset, ax=ax[i][j], annot=annot)
+                    #ax[i][j].set_title('')
+                    #ax[i][j].set_ylabel(y_labels[counter])
+                    j = j+1
+                    counter = counter+1
+                i = i+1
+        plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+        file_name = 'plots/heatmaps/' + filename + '.pdf'
+        plt.savefig(file_name)
